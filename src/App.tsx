@@ -1,26 +1,21 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useState } from 'react';
+import RegisterForm from './components/RegisterForm';
+import LoginForm from './components/LoginForm';
+import FileUpload from './components/FileUpload';
 
-function App() {
+const App: React.FC = () => {
+  const [showRegister, setShowRegister] = useState(true);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className="container">
+      {showRegister ? <RegisterForm /> : <LoginForm />}
+      <button className="btn btn-link mt-3" onClick={() => setShowRegister(!showRegister)}>
+        {showRegister ? 'Go to Login' : 'Go to Register'}
+      </button>
+
+      <FileUpload />
     </div>
   );
-}
+};
 
 export default App;
