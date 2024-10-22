@@ -1,5 +1,8 @@
 import React, { useState, ChangeEvent, FormEvent } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import './styles/Login.css';
+import { useNavigate } from 'react-router-dom';
+import { redirect } from 'react-router-dom';
 
 interface RegisterDto {
   username: string;
@@ -20,6 +23,8 @@ const RegisterForm: React.FC = () => {
     dateOfBirth: '',
   });
 
+  const navigate = useNavigate(); // Initialize useNavigate
+
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -37,6 +42,7 @@ const RegisterForm: React.FC = () => {
 
       if (response.ok) {
         alert('User registered successfully');
+        navigate('/login');
       } else {
         alert('Registration failed');
       }
@@ -47,7 +53,7 @@ const RegisterForm: React.FC = () => {
 
   return (
     <div className="container mt-5" style={styles.container}>
-      <h2 style={styles.title}>Register</h2>
+      <h2 className='tittleRegist' style={styles.title}>Register </h2>
       <form onSubmit={handleSubmit} className="needs-validation" noValidate>
         <div className="form-group">
           <input
@@ -115,7 +121,7 @@ const RegisterForm: React.FC = () => {
             required
           />
         </div>
-        <button type="submit" className="btn btn-primary btn-block" style={styles.button}>
+        <button type="submit" className="btn btn-primary btn-block" id='btnRegist' style={styles.button}>
           Register
         </button>
       </form>

@@ -1,0 +1,77 @@
+/* Container styling for the login form */
+.login-container {
+    background-color: #e4ebf0; /* Background color */
+    padding: 40px; /* Increased padding for more space */
+    border-radius: 15px; /* Rounded corners */
+    max-width: 350px; /* Adjusted width for a compact look */
+    margin: 0 auto; /* Center the form */
+    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+    
+  }
+
+  /* Espacio en blanco entre el navbar y el contenido */
+.navbar-spacing {
+    margin-bottom: 50px; /* Puedes ajustar este valor para más o menos espacio */
+  }
+  
+  /* Title styling */
+  .login-title {
+    color: #4180ab; /* Title color */
+    margin-bottom: 20px; /* Space between title and input fields */
+    text-align: center; /* Center align the title */
+    font-weight: bold; /* Bold text for title */
+    font-size: 1.8rem; /* Larger font size */
+  }
+
+  .tittleRegist{
+    text-align: center; /* Center align the title */
+    font-weight: bold; /* Bold text for title */
+    font-size: 1.8rem; 
+
+  }
+  
+  /* Input fields styling */
+  .login-input {
+    border-radius: 5px; /* Slightly rounded input fields */
+    padding: 10px; /* Padding inside input fields */
+    border: 1px solid #dcdcdc; /* Light border around inputs */
+    width: 100%; /* Make input full width */
+    margin-bottom: 15px; /* Space between form fields */
+  }
+  
+  /* Button styling */
+  .login-button {
+    background-color: #4180ab; /* Button color */
+    border-color: #4180ab;
+    color: #ffffff; /* Button text color */
+    width: 100%; /* Button takes up full width */
+    padding: 10px; /* Padding inside the button */
+    font-size: 1rem; /* Slightly larger button text */
+    border-radius: 5px; /* Rounded button */
+    margin-bottom: 15px; /* Space below button */
+  }
+
+  #btnRegist{
+
+    width: 100%; /* Button takes up full width */
+    padding: 10px; /* Padding inside the button */
+    font-size: 1rem; /* Slightly larger button text */
+    border-radius: 5px; /* Rounded button */
+    margin-bottom: 15px;
+  }
+  
+  /* Forgot password link styling */
+  .forgot-password {
+    margin-top: 15px; /* Space between button and forgot password link */
+    text-align: center; /* Center align the text */
+    color: #4180ab; /* Text color */
+    cursor: pointer; /* Change cursor on hover */
+  }
+  
+  /* Signup link styling */
+  .sign-up-link {
+    text-align: center; /* Center align sign up link */
+    margin-top: 20px; /* Space between links */
+    color: #4180ab; /* Link color */
+  }
+  

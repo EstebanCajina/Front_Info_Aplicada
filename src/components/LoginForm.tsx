@@ -1,5 +1,6 @@
 import React, { useState, ChangeEvent, FormEvent } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import './styles/Login.css';
 
 interface LoginDto {
   username: string;
@@ -38,36 +39,44 @@ const LoginForm: React.FC = () => {
   };
 
   return (
-    <div className="container mt-5" style={styles.container}>
-      <h2 style={styles.title}>Login</h2>
-      <form onSubmit={handleSubmit} className="needs-validation" noValidate>
-        <div className="form-group">
-          <input
-            type="text"
-            className="form-control mb-3"
-            name="username"
-            placeholder="Username"
-            value={formData.username}
-            onChange={handleChange}
-            required
-          />
-        </div>
-        <div className="form-group">
-          <input
-            type="password"
-            className="form-control mb-3"
-            name="password"
-            placeholder="Password"
-            value={formData.password}
-            onChange={handleChange}
-            required
-          />
-        </div>
-        <button type="submit" className="btn btn-primary btn-block" style={styles.button}>
-          Login
-        </button>
-      </form>
-    </div>
+
+    <div className="login-container">
+    <h2 className="login-title">Login</h2>
+    <form onSubmit={handleSubmit} className="needs-validation" noValidate>
+      <div className="form-group">
+        <input
+          type="text"
+          className="form-control login-input"
+          name="username"
+          placeholder="Username"
+          value={formData.username}
+          onChange={handleChange}
+          required
+        />
+      </div>
+      <div className="form-group">
+        <input
+          type="password"
+          className="form-control login-input"
+          name="password"
+          placeholder="Password"
+          value={formData.password}
+          onChange={handleChange}
+          required
+        />
+      </div>
+      <button type="submit" className="btn btn-primary login-button">
+        Login
+      </button>
+  
+     
+  
+      <div className="sign-up-link">
+        No tienes una cuenta? <a href="/Proyecto_info_aplicada/registrarse">Regístrate</a>
+      </div>
+    </form>
+  </div>
+  
   );
 };
 

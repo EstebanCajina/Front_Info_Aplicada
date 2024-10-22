@@ -1,7 +1,6 @@
 import React, { useState, ChangeEvent, FormEvent } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
-
 // Definir la estructura del DTO que se enviará al backend
 interface DocumentDto {
   owner: string;
@@ -11,13 +10,21 @@ interface DocumentDto {
 }
 
 const FileUpload: React.FC = () => {
-  const [file, setFile] = useState<File | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
   const [owner, setOwner] = useState<string>('');
 
-  // Función para manejar el cambio de archivo
+  // Función para manejar el cambio de archivos
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = event.target.files?.[0] || null;
-    setFile(selectedFile);
+    const selectedFiles = Array.from(event.target.files || []);
+    // Filtrar los archivos permitidos
+    const allowedTypes = ['text/plain', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/vnd.openxmlformats-officedocument.presentationml.presentation', 'application/pdf', 'image/jpeg', 'image/png'];
+
+    const validFiles = selectedFiles.filter(file => allowedTypes.includes(file.type));
+    if (validFiles.length !== selectedFiles.length) {
+      alert('Some files were not accepted due to their format. Please upload valid files only.');
+    }
+    
+    setFiles(validFiles); // Solo almacenar archivos válidos
   };
 
   // Función para manejar la conversión a Base64
@@ -34,35 +41,37 @@ const FileUpload: React.FC = () => {
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
 
-    if (!file || !owner) {
+    if (files.length === 0 || !owner) {
       alert('Please provide a file and owner name');
       return;
     }
 
     try {
-      const base64Content = await toBase64(file);
-      const documentDto: DocumentDto = {
-        owner: owner,
-        fileType: file.type,
-        size: file.size,
-        base64Content: base64Content,
-      };
+      for (const file of files) {
+        const base64Content = await toBase64(file);
+        const documentDto: DocumentDto = {
+          owner: owner,
+          fileType: file.type,
+          size: file.size,
+          base64Content: base64Content,
+        };
 
-      const response = await fetch('https://localhost:7114/api/documents/upload', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(documentDto),
-      });
+        const response = await fetch('https://localhost:7114/api/documents/upload', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(documentDto),
+        });
 
-      if (response.ok) {
-        alert('File uploaded successfully!');
-      } else {
-        alert('File upload failed.');
+        if (response.ok) {
+          alert(`File ${file.name} uploaded successfully!`);
+        } else {
+          alert(`File ${file.name} upload failed.`);
+        }
       }
     } catch (error) {
-      console.error('Error uploading file:', error);
+      console.error('Error uploading files:', error);
     }
   };
 
@@ -82,11 +91,12 @@ const FileUpload: React.FC = () => {
           />
         </div>
         <div className="form-group mb-3">
-          <label htmlFor="file" className="form-label">Select file:</label>
+          <label htmlFor="file" className="form-label">Select files:</label>
           <input
             type="file"
             className="form-control"
             id="file"
+            multiple
             onChange={handleFileChange}
             required
           />
@@ -117,4 +127,5 @@ const styles = {
     color: '#ffffff', // color2
   },
 };
+
 export default FileUpload;
