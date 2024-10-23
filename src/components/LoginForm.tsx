@@ -48,7 +48,7 @@ const LoginForm: React.FC = () => {
           type="text"
           className="form-control login-input"
           name="username"
-          placeholder="Username"
+          placeholder="Nombre De Usuario"
           value={formData.username}
           onChange={handleChange}
           required
@@ -59,14 +59,14 @@ const LoginForm: React.FC = () => {
           type="password"
           className="form-control login-input"
           name="password"
-          placeholder="Password"
+          placeholder="Contraseña"
           value={formData.password}
           onChange={handleChange}
           required
         />
       </div>
       <button type="submit" className="btn btn-primary login-button">
-        Login
+        Ingresar
       </button>
   
      

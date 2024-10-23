@@ -1,16 +1,24 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import './styles/Login.css';
 
-const pages: string[] = ['configuracion del sistema','agregar documentos','ver documentos'];
+const pages: string[] = ['configuracion del sistema', 'agregar documentos', 'ver documentos', 'ver bloques'];
 const settings: string[] = [];
 const loginSetting: string[] = ['Login'];
 
 const NavBar: React.FC = () => {
     return (
-        <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
+        <nav className="navbar navbar-expand-lg navbar-custom"> {/* Añade una clase CSS personalizada */}
             <div className="container-fluid">
-            
-                <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <button
+                    className="navbar-toggler"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#navbarNav"
+                    aria-controls="navbarNav"
+                    aria-expanded="false"
+                    aria-label="Toggle navigation"
+                >
                     <span className="navbar-toggler-icon"></span>
                 </button>
                 <div className="collapse navbar-collapse" id="navbarNav">
@@ -25,7 +33,6 @@ const NavBar: React.FC = () => {
                     </ul>
                     <ul className="navbar-nav ms-auto">
                         <li className="nav-item dropdown">
-                          
                             <ul className="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
                                 {settings.map((setting) => (
                                     <li key={setting}>

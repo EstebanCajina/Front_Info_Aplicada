@@ -6,11 +6,13 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import NavBar from './components/NavBar';
 import './components/styles/Login.css';
 import FileView from './components/FileView';
+import SystemConfig from './components/SystemConfig';
 
 const App: React.FC = () => {
   const [showRegister, setShowRegister] = useState(true);
 
   return (
+    
     <div className="container p-4">
       <Router basename="/Proyecto_info_aplicada">
         <NavBar />
@@ -22,6 +24,7 @@ const App: React.FC = () => {
           <Route path="/fileupload" element={<FileUpload />} />
           <Route path="agregar documentos" element={<FileUpload />} />
           <Route path="ver documentos" element={< FileView />} />
+          <Route path="configuracion del sistema" element={<SystemConfig />} />
         </Routes>
       </Router>
 

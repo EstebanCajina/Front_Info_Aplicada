@@ -53,14 +53,14 @@ const RegisterForm: React.FC = () => {
 
   return (
     <div className="container mt-5" style={styles.container}>
-      <h2 className='tittleRegist' style={styles.title}>Register </h2>
+      <h2 className='tittleRegist' style={styles.title}>Registro </h2>
       <form onSubmit={handleSubmit} className="needs-validation" noValidate>
         <div className="form-group">
           <input
             type="text"
             className="form-control mb-3"
             name="username"
-            placeholder="Username"
+            placeholder="Nombre De Usuario"
             value={formData.username}
             onChange={handleChange}
             required
@@ -82,7 +82,7 @@ const RegisterForm: React.FC = () => {
             type="password"
             className="form-control mb-3"
             name="password"
-            placeholder="Password"
+            placeholder="Contraseña"
             value={formData.password}
             onChange={handleChange}
             required
@@ -93,7 +93,7 @@ const RegisterForm: React.FC = () => {
             type="text"
             className="form-control mb-3"
             name="firstName"
-            placeholder="First Name"
+            placeholder="Nombre"
             value={formData.firstName}
             onChange={handleChange}
             required
@@ -104,7 +104,7 @@ const RegisterForm: React.FC = () => {
             type="text"
             className="form-control mb-3"
             name="lastName"
-            placeholder="Last Name"
+            placeholder="Apellido"
             value={formData.lastName}
             onChange={handleChange}
             required
@@ -115,14 +115,14 @@ const RegisterForm: React.FC = () => {
             type="text"
             className="form-control mb-3"
             name="dateOfBirth"
-            placeholder="Date of Birth (dd/MM/yyyy)"
+            placeholder="Fecha De Nacimiento (dd/MM/yyyy)"
             value={formData.dateOfBirth}
             onChange={handleChange}
             required
           />
         </div>
         <button type="submit" className="btn btn-primary btn-block" id='btnRegist' style={styles.button}>
-          Register
+          Registrarse
         </button>
       </form>
     </div>

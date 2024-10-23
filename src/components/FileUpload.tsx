@@ -1,5 +1,6 @@
 import React, { useState, ChangeEvent, FormEvent } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import { useNavigate } from 'react-router-dom';
 
 // Definir la estructura del DTO que se enviará al backend
 interface DocumentDto {
@@ -10,6 +11,7 @@ interface DocumentDto {
 }
 
 const FileUpload: React.FC = () => {
+  const navigate = useNavigate(); // Mover useNavigate dentro del componente
   const [files, setFiles] = useState<File[]>([]);
   const [owner, setOwner] = useState<string>('');
 
@@ -17,7 +19,19 @@ const FileUpload: React.FC = () => {
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = Array.from(event.target.files || []);
     // Filtrar los archivos permitidos
-    const allowedTypes = ['text/plain', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/vnd.openxmlformats-officedocument.presentationml.presentation', 'application/pdf', 'image/jpeg', 'image/png'];
+    const allowedTypes = [
+      'text/plain',  // txt
+      'application/msword',  // doc (para versiones más antiguas de Word)
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',  // docx
+      'application/vnd.ms-excel',  // xls (para versiones más antiguas de Excel)
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',  // xlsx
+      'application/vnd.ms-powerpoint',  // ppt (para versiones más antiguas de PowerPoint)
+      'application/vnd.openxmlformats-officedocument.presentationml.presentation',  // pptx
+      'application/pdf',  // pdf
+      'image/jpeg',  // jpg
+      'image/png'  // png
+    ];
+    
 
     const validFiles = selectedFiles.filter(file => allowedTypes.includes(file.type));
     if (validFiles.length !== selectedFiles.length) {
@@ -66,10 +80,12 @@ const FileUpload: React.FC = () => {
 
         if (response.ok) {
           alert(`File ${file.name} uploaded successfully!`);
+         
         } else {
           alert(`File ${file.name} upload failed.`);
         }
       }
+      navigate('/ver documentos');
     } catch (error) {
       console.error('Error uploading files:', error);
     }
@@ -77,10 +93,10 @@ const FileUpload: React.FC = () => {
 
   return (
     <div className="container mt-5" style={styles.container}>
-      <h2 style={styles.title}>Upload Document</h2>
+      <h2 style={styles.title}>Subir Documento</h2>
       <form onSubmit={handleSubmit} className="needs-validation" noValidate>
         <div className="form-group mb-3">
-          <label htmlFor="owner" className="form-label">Owner:</label>
+          <label htmlFor="owner" className="form-label">Dueño :</label>
           <input
             type="text"
             className="form-control"
@@ -91,7 +107,7 @@ const FileUpload: React.FC = () => {
           />
         </div>
         <div className="form-group mb-3">
-          <label htmlFor="file" className="form-label">Select files:</label>
+          <label htmlFor="file" className="form-label">Seleccionar Archivos:</label>
           <input
             type="file"
             className="form-control"
@@ -102,7 +118,7 @@ const FileUpload: React.FC = () => {
           />
         </div>
         <button type="submit" className="btn btn-primary btn-block" style={styles.button}>
-          Upload
+          Subir
         </button>
       </form>
     </div>
