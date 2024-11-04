@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
-interface SystemConfigDto {
+export interface SystemConfigDto {
   maxDocs: number;
   processTime: number;
   quantityOfZeros: number;
@@ -87,7 +87,10 @@ const SystemConfig: React.FC = () => {
               <tr>
                 <th>Configuración</th>
                 <th>Valor</th>
+
                 <th>Acción</th>
+
+
               </tr>
             </thead>
             <tbody>
@@ -105,6 +108,7 @@ const SystemConfig: React.FC = () => {
                   )}
                 </td>
                 <td>
+                {!editableConfig && (
                   <button
                     className="btn btn-secondary"
                     onClick={() => {
@@ -114,6 +118,8 @@ const SystemConfig: React.FC = () => {
                   >
                     {editableConfig ? 'Save' : 'Edit'}
                   </button>
+                )}
+
                 </td>
               </tr>
               <tr>
@@ -130,6 +136,7 @@ const SystemConfig: React.FC = () => {
                   )}
                 </td>
                 <td>
+                {!editableConfig && (
                   <button
                     className="btn btn-secondary"
                     onClick={() => {
@@ -139,6 +146,8 @@ const SystemConfig: React.FC = () => {
                   >
                     {editableConfig ? 'Save' : 'Edit'}
                   </button>
+                )}
+
                 </td>
               </tr>
               <tr>
@@ -155,6 +164,7 @@ const SystemConfig: React.FC = () => {
                   )}
                 </td>
                 <td>
+{!editableConfig && (
                   <button
                     className="btn btn-secondary"
                     onClick={() => {
@@ -164,6 +174,9 @@ const SystemConfig: React.FC = () => {
                   >
                     {editableConfig ? 'Save' : 'Edit'}
                   </button>
+                )}
+
+                 
                 </td>
               </tr>
             </tbody>
@@ -210,7 +223,7 @@ const SystemConfig: React.FC = () => {
             />
           </div>
           <button type="submit" className="btn btn-primary btn-block" style={styles.button}>
-            Save Configuration
+            Guardar Configuracion
           </button>
         </form>
       )}

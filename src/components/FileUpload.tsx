@@ -2,43 +2,55 @@ import React, { useState, ChangeEvent, FormEvent } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { useNavigate } from 'react-router-dom';
 
-// Definir la estructura del DTO que se enviará al backend
 interface DocumentDto {
   owner: string;
+  ownerId: string;
   fileType: string;
   size: number;
   base64Content: string;
 }
 
 const FileUpload: React.FC = () => {
-  const navigate = useNavigate(); // Mover useNavigate dentro del componente
+  const navigate = useNavigate();
   const [files, setFiles] = useState<File[]>([]);
   const [owner, setOwner] = useState<string>('');
+
+  // Función para obtener el ID de usuario del token
+  const getUserIdFromToken = (): string => {
+    const token = localStorage.getItem('accessToken');
+    if (token) {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      console.log(payload);
+      return payload.sub;
+    }
+    return '';
+  };
+
+  // Mapear tipos MIME a extensiones de archivo
+  const mimeToExtension: { [key: string]: string } = {
+    'text/plain': 'txt',
+    'application/msword': 'doc',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'docx',
+    'application/vnd.ms-excel': 'xls',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'xlsx',
+    'application/vnd.ms-powerpoint': 'ppt',
+    'application/vnd.openxmlformats-officedocument.presentationml.presentation': 'pptx',
+    'application/pdf': 'pdf',
+    'image/jpeg': 'jpg',
+    'image/png': 'png',
+  };
 
   // Función para manejar el cambio de archivos
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = Array.from(event.target.files || []);
-    // Filtrar los archivos permitidos
-    const allowedTypes = [
-      'text/plain',  // txt
-      'application/msword',  // doc (para versiones más antiguas de Word)
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',  // docx
-      'application/vnd.ms-excel',  // xls (para versiones más antiguas de Excel)
-      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',  // xlsx
-      'application/vnd.ms-powerpoint',  // ppt (para versiones más antiguas de PowerPoint)
-      'application/vnd.openxmlformats-officedocument.presentationml.presentation',  // pptx
-      'application/pdf',  // pdf
-      'image/jpeg',  // jpg
-      'image/png'  // png
-    ];
-    
+    const allowedTypes = Object.keys(mimeToExtension);
 
     const validFiles = selectedFiles.filter(file => allowedTypes.includes(file.type));
     if (validFiles.length !== selectedFiles.length) {
       alert('Some files were not accepted due to their format. Please upload valid files only.');
     }
-    
-    setFiles(validFiles); // Solo almacenar archivos válidos
+
+    setFiles(validFiles);
   };
 
   // Función para manejar la conversión a Base64
@@ -60,12 +72,17 @@ const FileUpload: React.FC = () => {
       return;
     }
 
+    const userId = getUserIdFromToken();
+
     try {
       for (const file of files) {
         const base64Content = await toBase64(file);
+        const fileExtension = mimeToExtension[file.type] || 'unknown';
+
         const documentDto: DocumentDto = {
           owner: owner,
-          fileType: file.type,
+          ownerId: userId,
+          fileType: `${file.type}.${fileExtension}`,
           size: file.size,
           base64Content: base64Content,
         };
@@ -80,7 +97,6 @@ const FileUpload: React.FC = () => {
 
         if (response.ok) {
           alert(`File ${file.name} uploaded successfully!`);
-         
         } else {
           alert(`File ${file.name} upload failed.`);
         }
@@ -127,20 +143,20 @@ const FileUpload: React.FC = () => {
 
 const styles = {
   container: {
-    backgroundColor: '#e4ebf0', // color5
+    backgroundColor: '#e4ebf0',
     padding: '20px',
     borderRadius: '10px',
     maxWidth: '400px',
     margin: '0 auto',
   },
   title: {
-    color: '#4180ab', // color1
+    color: '#4180ab',
     marginBottom: '20px',
   },
   button: {
-    backgroundColor: '#4180ab', // color1
+    backgroundColor: '#4180ab',
     borderColor: '#4180ab',
-    color: '#ffffff', // color2
+    color: '#ffffff',
   },
 };
 
