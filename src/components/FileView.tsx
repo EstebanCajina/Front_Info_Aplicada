@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './styles/Login.css';
-import SystemConfig, { SystemConfigDto } from './SystemConfig';
 
 interface Document {
   id: number;
@@ -10,6 +9,7 @@ interface Document {
   createdAt: string;
   size: number;
   base64Content: string | null;
+  blockId: number | null;
 }
 
 
@@ -98,13 +98,56 @@ const FileView: React.FC = () => {
     );
   };
 
+  const validateMaxDocs = (): boolean => {
+    // Filtrar documentos que tienen BlockId igual a null
+    const documentsToUpload = documents.filter(doc => doc.blockId === null);
+    
+    if (documentsToUpload.length < (systemConfig?.maxDocs ?? 0)) {
+        alert('Se necesitan al menos ' + systemConfig?.maxDocs + ' documentos para subir al bloque');
+        return false;
+    }
+    handleUploadToBlock();
+    return true; // Retorna true si la validación pasa
+};
+
+
+  const handleUploadToBlock = async () => {
+
+    const maxDocs = systemConfig?.maxDocs ?? 0;
+
+    try {
+      const response = await fetch(`https://localhost:7114/api/blocks/create/${maxDocs}`, {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        }
+    });
+
+    if (!response.ok) {
+        throw new Error("Error al crear el bloque.");
+    }
+} catch (error: unknown) {
+    if (error instanceof Error) {
+        setError(error.message);
+    } else {
+        setError('Ocurrió un error desconocido.');
+    }
+}
+};
+  
+
   const handleDownload = async (documento: Document) => {
+    
     try {
       const response = await fetch(`https://localhost:7114/api/documents/download/${documento.id}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`, // Agregar token en la cabecera
         },
+
+
+
       });
 
       if (!response.ok) {
@@ -205,7 +248,7 @@ const FileView: React.FC = () => {
     <div className="container mt-5" style={styles.container}>
       <h2 >Documentos</h2>
       {error && <div className="alert alert-danger">{error}</div>}
-      <table className="table table-striped" style={styles.table}>
+      <table >
         <thead>
           <tr>
             <th scope="col">
@@ -227,13 +270,15 @@ const FileView: React.FC = () => {
             <th scope="col">Acciones</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody >
           {documents.map((document) => {
             const fileType = document.fileType.split('/')[0]; // Obtener el tipo de archivo
             const shortName = mimeToName[document.fileType] || 'Desconocido'; // Obtener el nombre corto
 
+            const rowStyle = document.blockId !== null ? { backgroundColor: '#8ab3cf', color: 'white' } : {};
+
             return (
-              <tr key={document.id}>
+              <tr  key={document.id} style={rowStyle}>
                 <td>
                   <input
                     type="checkbox"
@@ -271,7 +316,7 @@ const FileView: React.FC = () => {
       </table>
       <div className="d-flex">
 
-      <button className="btn btn-primary btn-block" style={styles.button}>
+      <button className="btn btn-primary btn-block" onClick={validateMaxDocs} style={styles.button}>
         Subir al bloque
       </button>
 
@@ -301,6 +346,7 @@ const styles = {
   },
   table: {
     marginTop: '20px',
+    
   },
   button: {
     marginRight: '10px',
