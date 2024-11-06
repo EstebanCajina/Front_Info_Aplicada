@@ -117,7 +117,7 @@ const FileUpload: React.FC = () => {
             confirmButtonText: 'Aceptar',
           }).then(() => {
             // Recargar la página
-            window.location.reload();
+          
             navigate('/ver documentos');
           });
 

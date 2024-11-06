@@ -22,6 +22,11 @@ interface Block {
   createdAt: string;
   documents: Document[];
   isMined: boolean;
+  previousHash: string;
+  hash: string;
+  minedAt: string;
+  proof: number;
+  milliseconds : number;
 }
 
 const BlockView: React.FC = () => {
@@ -170,7 +175,47 @@ const BlockView: React.FC = () => {
 
       {blocks.map((block, index) => (
   <div key={block.id} style={styles.blockContainer}>
-    <h3>Número de Bloque: {index + 1}</h3>
+    <h3>Bloque: {index + 1}</h3>
+
+    <table className="table">
+      <thead>
+        <tr>
+          <th scope="col">Propiedad</th>
+          <th scope="col">Valor</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Hash Anterior</td>
+          <td>{block.previousHash}</td>
+        </tr>
+        <tr>
+          <td>Hash Actual</td>
+          <td>{block.hash}</td>
+        </tr>
+       
+        <tr>
+          <td>Minado</td>
+          <td>{block.isMined ? 'Sí' : 'No'}</td>
+        </tr>
+        <tr>
+          <td>Fecha de Minado</td>
+          <td>{block.isMined ? new Date(block.minedAt).toLocaleString() : 'N/A'}</td>
+        </tr>
+        <tr>
+          <td>Prueba</td>
+          <td>{block.proof}</td>
+        </tr>
+        <tr>
+          <td>Milisegundos</td>
+          <td>{block.milliseconds}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Documentos del Bloque: {index + 1}</h3>
+
+
     <table className="table">
       <thead>
         <tr>
@@ -206,6 +251,13 @@ const BlockView: React.FC = () => {
         Minar
       </button>
     )}
+
+{block.isMined && (
+      <div className="alert alert-success mt-3">
+        Bloque minado con éxito.
+      </div>
+    )}
+
   </div>
 ))}
 
