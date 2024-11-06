@@ -7,6 +7,7 @@ import FileUpload from './components/FileUpload';
 import FileView from './components/FileView';
 import SystemConfig from './components/SystemConfig';
 import ProtectedRoute from './components/ProtectedRoute';
+import BlockView from './components/BlockView';
 
 const App: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(Boolean(localStorage.getItem('accessToken')));
@@ -29,6 +30,7 @@ const App: React.FC = () => {
 
           {/* Rutas protegidas */}
           <Route path="/agregar documentos" element={<ProtectedRoute element={<FileUpload />} />} />
+          <Route path="/ver bloques" element={<ProtectedRoute element={<BlockView />} />} />
           <Route path="/ver documentos" element={<ProtectedRoute element={<FileView />} />} />
           <Route path="/configuracion del sistema" element={<ProtectedRoute element={<SystemConfig />} />} />
         </Routes>

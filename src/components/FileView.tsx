@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './styles/Login.css';
+import Swal from 'sweetalert2';
+
 
 interface Document {
   id: number;
@@ -107,8 +109,21 @@ const FileView: React.FC = () => {
         return false;
     }
     handleUploadToBlock();
+
+    Swal.fire({
+      title: '¡Éxito!',
+      text: 'Documentos subidos al bloque con éxito.',
+      icon: 'success',
+      confirmButtonText: 'Aceptar',
+    }).then(() => {
+      // Recargar la página
+      window.location.reload();
+    });
+  
     return true; // Retorna true si la validación pasa
-};
+  };
+
+
 
 
   const handleUploadToBlock = async () => {
@@ -164,28 +179,62 @@ const FileView: React.FC = () => {
       link.click(); // Simular el clic en el enlace
       document.body.removeChild(link); // Remover el enlace del DOM después de descargar
 
-      alert(`Documento ${documento.owner} descargado.`);
+      Swal.fire({
+        title: '¡Éxito!',
+        text: 'Documento descargado con exito.',
+        icon: 'success',
+        confirmButtonText: 'Aceptar',
+      });
     } catch (error) {
       console.error('Error al descargar el documento:', error);
       alert('Error al descargar el documento.');
     }
   };
 
-  const handleDelete = async (document: Document) => {
-    const response = await fetch(`https://localhost:7114/api/documents/delete/${document.id}`, {
-      method: 'DELETE',
-      headers: {
-        'Authorization': `Bearer ${token}`, // Agregar token en la cabecera
-      },
+  const handleDelete = (document: Document) => {
+    Swal.fire({
+      title: '¿Estás seguro?',
+      text: 'Esta acción no se puede deshacer.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar',
+    }).then(async (result) => {  // Agregar async aquí
+      if (result.isConfirmed) {
+        try {
+          const response = await fetch(`https://localhost:7114/api/documents/delete/${document.id}`, {
+            method: 'DELETE',
+            headers: {
+              'Authorization': `Bearer ${token}`, // Agregar token en la cabecera
+            },
+          });
+  
+          if (response.ok) {
+            Swal.fire(
+              'Eliminado!',
+              'El archivo ha sido eliminado.',
+              'success'
+            );
+            // Actualizar la lista de documentos después de eliminar
+            setDocuments(documents.filter(doc => doc.id !== document.id));
+          } else {
+            Swal.fire(
+              'Error',
+              'No se pudo eliminar el documento.',
+              'error'
+            );
+          }
+        } catch (error) {
+          Swal.fire(
+            'Error',
+            'Hubo un problema al eliminar el documento.',
+            'error'
+          );
+        }
+      }
     });
-
-    if (response.ok) {
-      alert(`Documento ${document.owner} eliminado.`);
-      setDocuments(documents.filter(doc => doc.id !== document.id));
-    } else {
-      alert('Error al eliminar el documento.');
-    }
   };
+  
 
   const handleDownloadSelected = async () => {
     try {
@@ -209,8 +258,12 @@ const FileView: React.FC = () => {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-
-      alert('Documentos descargados como ZIP.');
+      Swal.fire({
+        title: '¡Éxito!',
+        text: 'Documentos Descargados como zip.',
+        icon: 'success',
+        confirmButtonText: 'Aceptar',
+      });
     } catch (error) {
       console.error('Error al descargar documentos:', error);
       alert('Error al descargar documentos.');
@@ -218,9 +271,17 @@ const FileView: React.FC = () => {
   };
 
   const handleDeleteSelected = async () => {
-    const confirmDelete = window.confirm('¿Estás seguro de que quieres eliminar estos documentos?');
-    if (!confirmDelete) return;
-
+    const confirmDelete = await Swal.fire({
+      title: '¿Estás seguro?',
+      text: 'Esta acción no se puede deshacer.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar',
+    });
+  
+    if (!confirmDelete.isConfirmed) return;
+  
     try {
       const response = await fetch('https://localhost:7114/api/documents/delete/multiple', {
         method: 'DELETE',
@@ -230,19 +291,36 @@ const FileView: React.FC = () => {
         },
         body: JSON.stringify(selectedDocuments),
       });
-
+  
       if (response.ok) {
+        Swal.fire({
+          title: '¡Éxito!',
+          text: 'Documentos eliminados.',
+          icon: 'success',
+          confirmButtonText: 'Aceptar',
+        });
+  
         setDocuments(documents.filter(doc => !selectedDocuments.includes(doc.id)));
         setSelectedDocuments([]); // Limpiar selección
-        alert('Documentos eliminados.');
       } else {
-        alert('Error al eliminar documentos.');
+        Swal.fire({
+          title: 'Error',
+          text: 'No se pudieron eliminar los documentos.',
+          icon: 'error',
+          confirmButtonText: 'Aceptar',
+        });
       }
     } catch (error) {
       console.error('Error al eliminar documentos:', error);
-      alert('Error al eliminar documentos.');
+      Swal.fire({
+        title: 'Error',
+        text: 'Hubo un problema al eliminar los documentos.',
+        icon: 'error',
+        confirmButtonText: 'Aceptar',
+      });
     }
   };
+  
 
   return (
     <div className="container mt-5" style={styles.container}>
@@ -272,8 +350,7 @@ const FileView: React.FC = () => {
         </thead>
         <tbody >
           {documents.map((document) => {
-            const fileType = document.fileType.split('/')[0]; // Obtener el tipo de archivo
-            const shortName = mimeToName[document.fileType] || 'Desconocido'; // Obtener el nombre corto
+             const shortName = mimeToName[document.fileType] || 'Desconocido'; // Obtener el nombre corto
 
             const rowStyle = document.blockId !== null ? { backgroundColor: '#8ab3cf', color: 'white' } : {};
 

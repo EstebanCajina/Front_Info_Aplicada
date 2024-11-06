@@ -1,9 +1,10 @@
 import React, { useState, ChangeEvent, FormEvent } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { useNavigate } from 'react-router-dom';
+import Swal from 'sweetalert2';
 
 interface DocumentDto {
-  owner: string;
+
   ownerId: string;
   fileType: string;
   size: number;
@@ -13,7 +14,7 @@ interface DocumentDto {
 const FileUpload: React.FC = () => {
   const navigate = useNavigate();
   const [files, setFiles] = useState<File[]>([]);
-  const [owner, setOwner] = useState<string>('');
+
 
   // Función para obtener el ID de usuario del token
   const getUserIdFromToken = (): string => {
@@ -47,7 +48,14 @@ const FileUpload: React.FC = () => {
 
     const validFiles = selectedFiles.filter(file => allowedTypes.includes(file.type));
     if (validFiles.length !== selectedFiles.length) {
-      alert('Some files were not accepted due to their format. Please upload valid files only.');
+     
+      Swal.fire({
+        title: 'Error',
+        text: `Algunos archivos no cumplen con el formato permitido. Por favor, intente nuevamente con otro archivo.`,
+        icon: 'error',
+        confirmButtonText: 'Aceptar',
+      });
+
     }
 
     setFiles(validFiles);
@@ -67,8 +75,13 @@ const FileUpload: React.FC = () => {
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
 
-    if (files.length === 0 || !owner) {
-      alert('Please provide a file and owner name');
+    if (files.length === 0 ) {
+      Swal.fire({
+        title: 'Error',
+        text: `Por favor, seleccione al menos un archivo.`,
+        icon: 'error',
+        confirmButtonText: 'Aceptar',
+      });
       return;
     }
 
@@ -80,7 +93,7 @@ const FileUpload: React.FC = () => {
         const fileExtension = mimeToExtension[file.type] || 'unknown';
 
         const documentDto: DocumentDto = {
-          owner: owner,
+        
           ownerId: userId,
           fileType: `${file.type}.${fileExtension}`,
           size: file.size,
@@ -96,12 +109,29 @@ const FileUpload: React.FC = () => {
         });
 
         if (response.ok) {
-          alert(`File ${file.name} uploaded successfully!`);
+         
+          Swal.fire({
+            title: '¡Éxito!',
+            text: 'Documentos subidos al bloque con éxito.',
+            icon: 'success',
+            confirmButtonText: 'Aceptar',
+          }).then(() => {
+            // Recargar la página
+            window.location.reload();
+            navigate('/ver documentos');
+          });
+
         } else {
-          alert(`File ${file.name} upload failed.`);
+          Swal.fire({
+            title: 'Error',
+            text: `Error al subir el archivo ${file.name}. Por favor, intente nuevamente.`,
+            icon: 'error',
+            confirmButtonText: 'Aceptar',
+          });
         }
       }
-      navigate('/ver documentos');
+  
+    
     } catch (error) {
       console.error('Error uploading files:', error);
     }
@@ -111,17 +141,7 @@ const FileUpload: React.FC = () => {
     <div className="container mt-5" style={styles.container}>
       <h2 style={styles.title}>Subir Documento</h2>
       <form onSubmit={handleSubmit} className="needs-validation" noValidate>
-        <div className="form-group mb-3">
-          <label htmlFor="owner" className="form-label">Dueño :</label>
-          <input
-            type="text"
-            className="form-control"
-            id="owner"
-            value={owner}
-            onChange={(e) => setOwner(e.target.value)}
-            required
-          />
-        </div>
+       
         <div className="form-group mb-3">
           <label htmlFor="file" className="form-label">Seleccionar Archivos:</label>
           <input

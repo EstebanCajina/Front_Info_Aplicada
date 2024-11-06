@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import Swal from 'sweetalert2';
 
 export interface SystemConfigDto {
   maxDocs: number;
@@ -44,8 +45,17 @@ const SystemConfig: React.FC = () => {
 
         if (!response.ok) throw new Error('Error updating system configuration');
 
-        alert('System configuration updated successfully.');
-        window.location.reload(); // Refrescar la página
+        
+        Swal.fire({
+          title: '¡Éxito!',
+          text: 'Documentos subidos al bloque con éxito.',
+          icon: 'success',
+          confirmButtonText: 'Aceptar',
+        }).then(() => {
+          // Recargar la página
+          window.location.reload();
+        });
+
       } catch (err: any) {
         setError(err.message);
       }
