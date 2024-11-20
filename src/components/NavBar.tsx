@@ -6,7 +6,7 @@ interface NavBarProps {
   setIsAuthenticated: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-const pages: string[] = ['configuracion del sistema', 'agregar documentos', 'ver documentos', 'ver bloques'];
+const pages: string[] = ['configuracion del sistema', 'agregar documentos', 'ver documentos', 'ver bloques', 'ver registros'];
 const loginSetting: string[] = ['Login'];
 
 const NavBar: React.FC<NavBarProps> = ({ setIsAuthenticated }) => {

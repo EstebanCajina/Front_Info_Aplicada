@@ -3,7 +3,6 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import './styles/Login.css';
 import Swal from 'sweetalert2';
 
-
 interface Document {
   id: number;
   owner: string;
@@ -14,15 +13,14 @@ interface Document {
   blockId: number | null;
 }
 
-
-
 interface SystemConfig {
   maxDocs: number;
+  quantityOfZeros: number;
 }
 
 const FileView: React.FC = () => {
   const [documents, setDocuments] = useState<Document[]>([]);
-  const [selectedDocuments, setSelectedDocuments] = useState<number[]>([]); // Estado para documentos seleccionados
+  const [selectedDocuments, setSelectedDocuments] = useState<number[]>([]);
   const [systemConfig, setSystemConfig] = useState<SystemConfig | null>(null);
   const [error, setError] = useState<string>('');
 
@@ -31,7 +29,6 @@ const FileView: React.FC = () => {
   const userId = user ? user.sub : '';
   const userName = user ? user.unique_name : '';
 
-  // Mapa de tipos de archivo
   const mimeToName: Record<string, string> = {
     'text/plain.txt': 'txt',
     'application/msword.doc': 'doc',
@@ -66,7 +63,7 @@ const FileView: React.FC = () => {
         }
       }
     };
-  
+
     const fetchSystemConfig = async () => {
       try {
         const response = await fetch('https://localhost:7114/api/SystemConfig/get', {
@@ -77,8 +74,6 @@ const FileView: React.FC = () => {
         }
         const data = await response.json();
         setSystemConfig(data);
-        console.log(data);
-        
       } catch (error: unknown) {
         if (error instanceof Error) {
           setError(error.message);
@@ -87,156 +82,98 @@ const FileView: React.FC = () => {
         }
       }
     };
-  
-    // Ejecuta ambas funciones asíncronas
+
     fetchDocuments();
     fetchSystemConfig();
   }, [token, userId]);
-  
-
-  const handleSelectDocument = (id: number) => {
-    setSelectedDocuments(prev =>
-      prev.includes(id) ? prev.filter(docId => docId !== id) : [...prev, id]
-    );
-  };
 
   const validateMaxDocs = (): boolean => {
-    // Filtrar documentos que tienen BlockId igual a null
     const documentsToUpload = documents.filter(doc => doc.blockId === null);
-    
     if (documentsToUpload.length < (systemConfig?.maxDocs ?? 0)) {
-        alert('Se necesitan al menos ' + systemConfig?.maxDocs + ' documentos para subir al bloque');
-        return false;
+      alert('Se necesitan más documentos para subir al bloque.');
+      return false;
     }
     handleUploadToBlock();
-
-    Swal.fire({
-      title: '¡Éxito!',
-      text: 'Documentos subidos al bloque con éxito.',
-      icon: 'success',
-      confirmButtonText: 'Aceptar',
-    }).then(() => {
-      // Recargar la página
-      window.location.reload();
-    });
-  
-    return true; // Retorna true si la validación pasa
+    return true;
   };
 
-
-
-
   const handleUploadToBlock = async () => {
-
     const maxDocs = systemConfig?.maxDocs ?? 0;
+    const quantityOfZeros = systemConfig?.quantityOfZeros ?? 4;
 
     try {
-      const response = await fetch(`https://localhost:7114/api/blocks/create/${maxDocs}`, {
+      Swal.fire({
+        title: 'Creando y minando el bloque...',
+        text: 'Por favor espere, esto puede tardar un momento.',
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        }
+      });
+
+      const response = await fetch(`https://localhost:7114/api/blocks/create-and-mine/${maxDocs}/${quantityOfZeros}`, {
         method: 'POST',
         headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
         }
-    });
+      });
 
-    if (!response.ok) {
-        throw new Error("Error al crear el bloque.");
-    }
-} catch (error: unknown) {
-    if (error instanceof Error) {
+      if (!response.ok) {
+        throw new Error("Error al crear y minar el bloque.");
+      }
+
+      Swal.close();
+      Swal.fire({
+        title: '¡Éxito!',
+        text: 'Bloque creado y minado exitosamente.',
+        icon: 'success',
+        confirmButtonText: 'Aceptar',
+      }).then(() => {
+        window.location.reload();
+      });
+    } catch (error: unknown) {
+      Swal.close();
+      if (error instanceof Error) {
         setError(error.message);
-    } else {
+      } else {
         setError('Ocurrió un error desconocido.');
+      }
     }
-}
-};
-  
+  };
 
-  const handleDownload = async (documento: Document) => {
-    
+  const handleDownloadDocument = async (documentId: number, fileType: string) => {
     try {
-      const response = await fetch(`https://localhost:7114/api/documents/download/${documento.id}`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`, // Agregar token en la cabecera
-        },
-
-
-
+      const response = await fetch(`https://localhost:7114/api/documents/download/${documentId}`, {
+        headers: { 'Authorization': `Bearer ${token}` },
       });
 
       if (!response.ok) {
         throw new Error('Error al descargar el documento.');
       }
 
-      const { base64Content, fileType } = await response.json();
-
-      // Crear un enlace de descarga
+      const { base64Content } = await response.json();
+      const blob = new Blob([Uint8Array.from(atob(base64Content), c => c.charCodeAt(0))], { type: fileType });
       const link = document.createElement('a');
-      link.href = `data:${fileType};base64,${base64Content}`;
-      link.download = `document_${documento.id}.${fileType.split('/')[1] || 'bin'}`; // Usar la extensión corta
-      document.body.appendChild(link); // Agregar el enlace al DOM
-      link.click(); // Simular el clic en el enlace
-      document.body.removeChild(link); // Remover el enlace del DOM después de descargar
+      link.href = URL.createObjectURL(blob);
+      link.download = `document_${documentId}.${fileType.split('/')[1]}`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
 
-      Swal.fire({
-        title: '¡Éxito!',
-        text: 'Documento descargado con exito.',
-        icon: 'success',
-        confirmButtonText: 'Aceptar',
-      });
+      Swal.fire('¡Éxito!', 'Documento descargado con éxito.', 'success');
     } catch (error) {
       console.error('Error al descargar el documento:', error);
-      alert('Error al descargar el documento.');
+      Swal.fire('Error', 'No se pudo descargar el documento.', 'error');
     }
   };
 
-  const handleDelete = (document: Document) => {
-    Swal.fire({
-      title: '¿Estás seguro?',
-      text: 'Esta acción no se puede deshacer.',
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonText: 'Sí, eliminar',
-      cancelButtonText: 'Cancelar',
-    }).then(async (result) => {  // Agregar async aquí
-      if (result.isConfirmed) {
-        try {
-          const response = await fetch(`https://localhost:7114/api/documents/delete/${document.id}`, {
-            method: 'DELETE',
-            headers: {
-              'Authorization': `Bearer ${token}`, // Agregar token en la cabecera
-            },
-          });
-  
-          if (response.ok) {
-            Swal.fire(
-              'Eliminado!',
-              'El archivo ha sido eliminado.',
-              'success'
-            );
-            // Actualizar la lista de documentos después de eliminar
-            setDocuments(documents.filter(doc => doc.id !== document.id));
-          } else {
-            Swal.fire(
-              'Error',
-              'No se pudo eliminar el documento.',
-              'error'
-            );
-          }
-        } catch (error) {
-          Swal.fire(
-            'Error',
-            'Hubo un problema al eliminar el documento.',
-            'error'
-          );
-        }
-      }
-    });
-  };
-  
-
   const handleDownloadSelected = async () => {
+    if (selectedDocuments.length === 0) {
+      Swal.fire('Advertencia', 'No has seleccionado ningún documento.', 'warning');
+      return;
+    }
+
     try {
       const response = await fetch(`https://localhost:7114/api/documents/download/zip`, {
         method: 'POST',
@@ -258,19 +195,14 @@ const FileView: React.FC = () => {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      Swal.fire({
-        title: '¡Éxito!',
-        text: 'Documentos Descargados como zip.',
-        icon: 'success',
-        confirmButtonText: 'Aceptar',
-      });
+      Swal.fire('¡Éxito!', 'Documentos descargados como ZIP.', 'success');
     } catch (error) {
       console.error('Error al descargar documentos:', error);
-      alert('Error al descargar documentos.');
+      Swal.fire('Error', 'Error al descargar documentos.', 'error');
     }
   };
 
-  const handleDeleteSelected = async () => {
+  const handleDeleteDocument = async (documentId: number) => {
     const confirmDelete = await Swal.fire({
       title: '¿Estás seguro?',
       text: 'Esta acción no se puede deshacer.',
@@ -279,9 +211,51 @@ const FileView: React.FC = () => {
       confirmButtonText: 'Sí, eliminar',
       cancelButtonText: 'Cancelar',
     });
-  
+
     if (!confirmDelete.isConfirmed) return;
-  
+
+    try {
+      const response = await fetch(`https://localhost:7114/api/documents/delete/${documentId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        Swal.fire('¡Éxito!', 'Documento eliminado.', 'success');
+        setDocuments(documents.filter(doc => doc.id !== documentId));
+      } else {
+        Swal.fire('Error', 'No se pudo eliminar el documento.', 'error');
+      }
+    } catch (error) {
+      console.error('Error al eliminar documento:', error);
+      Swal.fire('Error', 'Hubo un problema al eliminar el documento.', 'error');
+    }
+  };
+
+  const handleDeleteSelected = async () => {
+    const deletableDocuments = selectedDocuments.filter(id => {
+      const doc = documents.find(d => d.id === id);
+      return doc && doc.blockId === null;
+    });
+
+    if (deletableDocuments.length === 0) {
+      Swal.fire('Advertencia', 'No has seleccionado ningún documento sin bloque para eliminar.', 'warning');
+      return;
+    }
+
+    const confirmDelete = await Swal.fire({
+      title: '¿Estás seguro?',
+      text: 'Esta acción no se puede deshacer.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar',
+    });
+
+    if (!confirmDelete.isConfirmed) return;
+
     try {
       const response = await fetch('https://localhost:7114/api/documents/delete/multiple', {
         method: 'DELETE',
@@ -289,44 +263,33 @@ const FileView: React.FC = () => {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(selectedDocuments),
+        body: JSON.stringify(deletableDocuments),
       });
-  
+
       if (response.ok) {
-        Swal.fire({
-          title: '¡Éxito!',
-          text: 'Documentos eliminados.',
-          icon: 'success',
-          confirmButtonText: 'Aceptar',
-        });
-  
-        setDocuments(documents.filter(doc => !selectedDocuments.includes(doc.id)));
-        setSelectedDocuments([]); // Limpiar selección
+        Swal.fire('¡Éxito!', 'Documentos eliminados.', 'success');
+        setDocuments(documents.filter(doc => !deletableDocuments.includes(doc.id)));
+        setSelectedDocuments(selectedDocuments.filter(id => !deletableDocuments.includes(id)));
       } else {
-        Swal.fire({
-          title: 'Error',
-          text: 'No se pudieron eliminar los documentos.',
-          icon: 'error',
-          confirmButtonText: 'Aceptar',
-        });
+        Swal.fire('Error', 'No se pudieron eliminar los documentos.', 'error');
       }
     } catch (error) {
       console.error('Error al eliminar documentos:', error);
-      Swal.fire({
-        title: 'Error',
-        text: 'Hubo un problema al eliminar los documentos.',
-        icon: 'error',
-        confirmButtonText: 'Aceptar',
-      });
+      Swal.fire('Error', 'Hubo un problema al eliminar los documentos.', 'error');
     }
   };
-  
+
+  const handleSelectDocument = (id: number) => {
+    setSelectedDocuments(prev =>
+      prev.includes(id) ? prev.filter(docId => docId !== id) : [...prev, id]
+    );
+  };
 
   return (
     <div className="container mt-5" style={styles.container}>
-      <h2 >Documentos</h2>
+      <h2>Documentos</h2>
       {error && <div className="alert alert-danger">{error}</div>}
-      <table >
+      <table>
         <thead>
           <tr>
             <th scope="col">
@@ -334,9 +297,9 @@ const FileView: React.FC = () => {
                 type="checkbox"
                 onChange={e => {
                   if (e.target.checked) {
-                    setSelectedDocuments(documents.map(doc => doc.id)); // Seleccionar todos
+                    setSelectedDocuments(documents.map(doc => doc.id));
                   } else {
-                    setSelectedDocuments([]); // Deseleccionar todos
+                    setSelectedDocuments([]);
                   }
                 }}
               />
@@ -348,14 +311,12 @@ const FileView: React.FC = () => {
             <th scope="col">Acciones</th>
           </tr>
         </thead>
-        <tbody >
+        <tbody>
           {documents.map((document) => {
-             const shortName = mimeToName[document.fileType] || 'Desconocido'; // Obtener el nombre corto
-
+            const shortName = mimeToName[document.fileType] || 'Desconocido';
             const rowStyle = document.blockId !== null ? { backgroundColor: '#8ab3cf', color: 'white' } : {};
-
             return (
-              <tr  key={document.id} style={rowStyle}>
+              <tr key={document.id} style={rowStyle}>
                 <td>
                   <input
                     type="checkbox"
@@ -364,26 +325,25 @@ const FileView: React.FC = () => {
                   />
                 </td>
                 <td>{userName}</td>
-                <td>{`${shortName}`}</td> {/* Mostrar nombre corto y tipo de archivo */}
+                <td>{shortName}</td>
                 <td>{new Date(document.createdAt).toLocaleString()}</td>
                 <td>{(document.size / (1024 * 1024)).toFixed(5)}</td>
-
                 <td>
                   <div className="d-flex">
                     <button
-                      style={styles.button}
                       className="btn btn-primary me-2"
-                      onClick={() => handleDownload(document)}
+                      onClick={() => handleDownloadDocument(document.id, document.fileType)}
                     >
                       Descargar
                     </button>
-                    <button
-                      style={styles.button}
-                      className="btn btn-danger"
-                      onClick={() => handleDelete(document)}
-                    >
-                      Eliminar
-                    </button>
+                    {document.blockId === null && (
+                      <button
+                        className="btn btn-danger"
+                        onClick={() => handleDeleteDocument(document.id)}
+                      >
+                        Eliminar
+                      </button>
+                    )}
                   </div>
                 </td>
               </tr>
@@ -392,19 +352,16 @@ const FileView: React.FC = () => {
         </tbody>
       </table>
       <div className="d-flex">
-
-      <button className="btn btn-primary btn-block" onClick={validateMaxDocs} style={styles.button}>
-        Subir al bloque
-      </button>
-
-        <button className="btn btn-primary me-2" onClick={handleDownloadSelected} disabled={selectedDocuments.length === 0}>
+        <button className="btn btn-primary me-2" onClick={validateMaxDocs}>
+          Subir al bloque
+        </button>
+        <button className="btn btn-secondary me-2" onClick={handleDownloadSelected}>
           Descargar Seleccionados
         </button>
-        <button className="btn btn-danger" onClick={handleDeleteSelected} disabled={selectedDocuments.length === 0}>
+        <button className="btn btn-danger" onClick={handleDeleteSelected}>
           Eliminar Seleccionados
         </button>
       </div>
-      
     </div>
   );
 };
@@ -417,16 +374,6 @@ const styles = {
     padding: '20px',
     borderRadius: '8px',
     boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)',
-  },
-  title: {
-    textAlign: 'center',
-  },
-  table: {
-    marginTop: '20px',
-    
-  },
-  button: {
-    marginRight: '10px',
   },
 };
 

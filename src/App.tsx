@@ -8,6 +8,7 @@ import FileView from './components/FileView';
 import SystemConfig from './components/SystemConfig';
 import ProtectedRoute from './components/ProtectedRoute';
 import BlockView from './components/BlockView';
+import AuditLogViewer from './components/AuditLogViewer';
 
 const App: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(Boolean(localStorage.getItem('accessToken')));
@@ -33,6 +34,7 @@ const App: React.FC = () => {
           <Route path="/ver bloques" element={<ProtectedRoute element={<BlockView />} />} />
           <Route path="/ver documentos" element={<ProtectedRoute element={<FileView />} />} />
           <Route path="/configuracion del sistema" element={<ProtectedRoute element={<SystemConfig />} />} />
+          <Route path="/ver registros" element={<ProtectedRoute element={<AuditLogViewer />} />} />
         </Routes>
       </Router>
     </div>
